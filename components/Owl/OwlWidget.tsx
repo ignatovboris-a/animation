@@ -208,8 +208,18 @@ export const OwlWidget: React.FC<OwlWidgetProps> = ({
     return () => cancelAnimationFrame(requestRef.current!);
   }, [bugs, position, action, facingRight, defaultPosition, returnToStart]);
 
-  // Dynamic Height calculation for UI elements based on scale
+  // UI Positioning Logic
+  // If the owl is near the top of the screen (< 250px), render bubbles below the feet.
+  const isNearTop = position.y < 250;
+  
+  // Standard offset for UI elements above the owl
   const uiBottomOffset = `${140 * scale}px`;
+  const uiTopOffset = `1rem`; // Just below feet
+
+  // Common position style for bubbles
+  const bubbleStyle = isNearTop 
+    ? { top: uiTopOffset } 
+    : { bottom: uiBottomOffset };
 
   return (
     <div 
@@ -249,9 +259,9 @@ export const OwlWidget: React.FC<OwlWidgetProps> = ({
             key={xpFloat.id}
             className="absolute left-0 -translate-x-1/2 text-amber-500 font-black text-xl pointer-events-none z-[60] whitespace-nowrap"
             style={{ 
-                bottom: uiBottomOffset, 
+                ...bubbleStyle,
                 textShadow: '0 2px 4px rgba(0,0,0,0.3)',
-                animation: 'floatUp 1s ease-out forwards'
+                animation: isNearTop ? 'floatDown 1s ease-out forwards' : 'floatUp 1s ease-out forwards'
             }}
         >
             +20 XP
@@ -263,8 +273,8 @@ export const OwlWidget: React.FC<OwlWidgetProps> = ({
         <div 
             className="absolute left-0 -translate-x-1/2 bg-white/95 backdrop-blur rounded-xl shadow-2xl border-2 border-amber-400 p-2 z-[70] flex flex-col gap-1 items-center min-w-[120px] cursor-auto pointer-events-auto"
             style={{ 
-                bottom: uiBottomOffset, 
-                transform: `translateY(-10px)`
+                ...bubbleStyle,
+                transform: isNearTop ? `translateY(0)` : `translateY(-10px)`
             }}
             onClick={(e) => e.stopPropagation()} 
         >
@@ -288,7 +298,7 @@ export const OwlWidget: React.FC<OwlWidgetProps> = ({
         <div 
             className="absolute bg-white px-3 py-1 rounded-xl shadow-lg border border-gray-200 animate-bounce whitespace-nowrap z-[60] pointer-events-auto"
             style={{ 
-                bottom: uiBottomOffset,
+                ...bubbleStyle,
                 left: '2rem', 
             }}
         >
@@ -300,12 +310,11 @@ export const OwlWidget: React.FC<OwlWidgetProps> = ({
       {currentJoke && (
         <div 
            className="absolute left-0 -translate-x-1/2 w-64 bg-white p-4 rounded-2xl shadow-xl border-2 border-stone-200 z-50 text-center cursor-auto pointer-events-auto"
-           style={{ 
-               bottom: `${160 * scale}px`, 
-           }} 
+           style={isNearTop ? { top: '2rem' } : { bottom: `${160 * scale}px` }}
         >
             <p className="text-sm font-bold text-stone-800 leading-snug">{currentJoke}</p>
-            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-white border-b-2 border-r-2 border-stone-200 rotate-45"></div>
+            {/* Tail - Top or Bottom based on position */}
+            <div className={`absolute left-1/2 -translate-x-1/2 w-4 h-4 bg-white border-b-2 border-r-2 border-stone-200 rotate-45 ${isNearTop ? '-top-2 border-b-0 border-r-0 border-t-2 border-l-2' : '-bottom-2'}`}></div>
         </div>
       )}
       
@@ -314,6 +323,10 @@ export const OwlWidget: React.FC<OwlWidgetProps> = ({
         @keyframes floatUp {
             0% { opacity: 1; transform: translateY(0); }
             100% { opacity: 0; transform: translateY(-30px); }
+        }
+        @keyframes floatDown {
+            0% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(30px); }
         }
       `}</style>
     </div>
