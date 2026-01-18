@@ -16,12 +16,16 @@
    `npm run build`
 3. Use the generated bundle at:
    `dist/owl-widget-bundle.js`
+4. Include the generated styles:
+   `dist/owl-widget-bundle.css`
 
 ### Usage (Blazor / external embed)
 
 1. Add a container element on your page:
    `<div id="owl-widget-root"></div>`
-2. Include the bundle script:
+2. Include the bundle styles:
+   `<link href="/path/to/owl-widget-bundle.css" rel="stylesheet">`
+3. Include the bundle script:
    `<script src="/path/to/owl-widget-bundle.js"></script>`
-3. Mount the widget:
+4. Mount the widget:
    `<script>window.mountOwlWidget('owl-widget-root');</script>`

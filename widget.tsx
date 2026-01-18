@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import './index.css';
 import { OwlOverlay } from './components/Owl/OwlOverlay';
 
 declare global {
@@ -9,15 +10,7 @@ declare global {
 }
 
 const ensureStyleDependencies = () => {
-  const tailwindId = 'owl-widget-tailwind';
   const fontId = 'owl-widget-font';
-
-  if (!document.getElementById(tailwindId)) {
-    const script = document.createElement('script');
-    script.id = tailwindId;
-    script.src = 'https://cdn.tailwindcss.com';
-    document.head.appendChild(script);
-  }
 
   if (!document.getElementById(fontId)) {
     const link = document.createElement('link');
