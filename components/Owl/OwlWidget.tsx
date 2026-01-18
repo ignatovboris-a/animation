@@ -8,6 +8,7 @@ interface OwlWidgetProps {
   onMove?: (pos: Position) => void; // Report position to parent (for bug AI)
   defaultPosition?: Position;
   scale?: number;
+  returnToStart?: boolean; // New Prop: Should owl go home after work?
 }
 
 const CODING_JOKES = [
@@ -33,8 +34,15 @@ const CODING_JOKES = [
   "I told my computer I needed a break, and now it won't stop sending me Kit-Kats."
 ];
 
-export const OwlWidget: React.FC<OwlWidgetProps> = ({ bugs, onSquashBug, onMove, defaultPosition, scale = 0.8 }) => {
-  const [position, setPosition] = useState<Position>(defaultPosition || { x: 100, y: 100 });
+export const OwlWidget: React.FC<OwlWidgetProps> = ({ 
+  bugs, 
+  onSquashBug, 
+  onMove, 
+  defaultPosition = { x: 100, y: 100 }, 
+  scale = 0.8,
+  returnToStart = false 
+}) => {
+  const [position, setPosition] = useState<Position>(defaultPosition);
   const [action, setAction] = useState<OwlAction>(OwlAction.IDLE);
   const [facingRight, setFacingRight] = useState(true);
   const [mousePos, setMousePos] = useState<Position | null>(null);
@@ -42,6 +50,17 @@ export const OwlWidget: React.FC<OwlWidgetProps> = ({ bugs, onSquashBug, onMove,
   // Joke State
   const [currentJoke, setCurrentJoke] = useState<string | null>(null);
   const jokeTimeoutRef = useRef<number | null>(null);
+
+  // Initial Position Logic: If defaultPosition changes drastically, teleport or acknowledge?
+  // We generally trust the internal state, but on mount we respect default.
+  // We use a ref to track if we've initialized to avoid jumping if prop updates.
+  const initialized = useRef(false);
+  useEffect(() => {
+    if (!initialized.current) {
+        setPosition(defaultPosition);
+        initialized.current = true;
+    }
+  }, [defaultPosition]);
 
   // Speed constants
   const SPEED = 4; // Pixels per frame
@@ -109,8 +128,9 @@ export const OwlWidget: React.FC<OwlWidgetProps> = ({ bugs, onSquashBug, onMove,
             // Celebration after squash
             setTimeout(() => {
                setAction(OwlAction.CELEBRATING);
-               // Back to idle
+               // Back to idle handled by logic below once bug is gone/squashed
                setTimeout(() => {
+                 // Force idle briefly to reset state before loop picks up next action
                  setAction(OwlAction.IDLE);
                }, 1500);
             }, 300);
@@ -133,12 +153,47 @@ export const OwlWidget: React.FC<OwlWidgetProps> = ({ bugs, onSquashBug, onMove,
       }
 
     } else {
-      // No bugs - Idle behavior
-      if (action !== OwlAction.IDLE && action !== OwlAction.CELEBRATING && action !== OwlAction.SLEEPING) {
-        setAction(OwlAction.IDLE);
+      // --- NO ACTIVE BUGS ---
+
+      // Check priorities: Attacking/Celebrating/Sleeping take precedence
+      if (action === OwlAction.ATTACKING || action === OwlAction.CELEBRATING || action === OwlAction.SLEEPING || action === OwlAction.TELLING_JOKE) {
+        // Do nothing, let animation play out
+      } else {
+        // We are free to Idle or Return to Start
+        
+        if (returnToStart) {
+            // Calculate distance to Home
+            const dx = defaultPosition.x - position.x;
+            const dy = defaultPosition.y - position.y;
+            const dist = Math.sqrt(dx*dx + dy*dy);
+            
+            // If we are far from home, walk there
+            if (dist > 5) {
+                if (action !== OwlAction.WALKING) setAction(OwlAction.WALKING);
+
+                if (dx > 0 && !facingRight) setFacingRight(true);
+                if (dx < 0 && facingRight) setFacingRight(false);
+
+                const vx = (dx / dist) * SPEED;
+                const vy = (dy / dist) * SPEED;
+
+                const newPos = {
+                    x: position.x + vx,
+                    y: position.y + vy
+                };
+                setPosition(newPos);
+                if (onMove) onMove(newPos);
+            } else {
+                // We are home
+                if (action !== OwlAction.IDLE) setAction(OwlAction.IDLE);
+            }
+        } else {
+            // Just idle where we are
+            if (action !== OwlAction.IDLE) setAction(OwlAction.IDLE);
+        }
       }
       
-      // If we are idle, we should still report position occasionally or keep it fresh
+      // Keep reporting position
       if (onMove) onMove(position);
     }
 
@@ -149,7 +204,7 @@ export const OwlWidget: React.FC<OwlWidgetProps> = ({ bugs, onSquashBug, onMove,
     requestRef.current = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(requestRef.current!);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [bugs, position, action, facingRight]); // Dependencies for state updates within loop
+  }, [bugs, position, action, facingRight, defaultPosition, returnToStart]);
 
   return (
     <div 
