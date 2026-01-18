@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import { mountOwlWidget } from './widget';
+import './index.css';
 
 // Standalone mount (for development)
 const rootElement = document.getElementById('root');

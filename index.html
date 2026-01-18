@@ -4,74 +4,8 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>DevOwl Widget</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23f59e0b'/%3E%3Cpath d='M20 24c3-6 8-9 12-9s9 3 12 9l4-2c-3-8-9-13-16-13S20 14 17 22l3 2zm-1 10c0-6 6-10 13-10s13 4 13 10-6 12-13 12-13-6-13-12zm9 0a4 4 0 1 0 8 0 4 4 0 0 0-8 0z' fill='white'/%3E%3C/svg%3E" />
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
-    <style>
-      body {
-        font-family: 'Nunito', sans-serif;
-        overflow-x: hidden;
-      }
-      .perspective-container {
-        perspective: 1000px;
-      }
-      .preserve-3d {
-        transform-style: preserve-3d;
-      }
-      /* Custom Feather Pattern */
-      .feather-pattern {
-        background-image: radial-gradient(circle at 50% 120%, rgba(255,255,255,0.4) 10%, transparent 50%);
-        background-size: 10px 10px;
-      }
-      
-      /* Subtle breathing for chest only */
-      @keyframes breathe {
-        0%, 100% { transform: scale(1); opacity: 0.9; }
-        50% { transform: scale(1.05); opacity: 1; }
-      }
-      .animate-breathe {
-        animation: breathe 3s ease-in-out infinite;
-      }
-
-      /* Walking Gait Animations */
-      @keyframes walk-left-leg {
-        0%, 100% { transform: translateY(0) rotate(0deg); }
-        25% { transform: translateY(-12px) rotate(-15deg); } /* Lift High (Knee bend simulation) */
-        50% { transform: translateY(0) rotate(0deg); }
-      }
-      @keyframes walk-right-leg {
-        0%, 100% { transform: translateY(0) rotate(0deg); }
-        50% { transform: translateY(0) rotate(0deg); }
-        75% { transform: translateY(-12px) rotate(15deg); } /* Lift High */
-      }
-      
-      .animate-walk-left {
-        animation: walk-left-leg 0.6s infinite ease-in-out;
-      }
-      .animate-walk-right {
-        animation: walk-right-leg 0.6s infinite ease-in-out;
-      }
-      
-      /* Subtle body sway during walk */
-      @keyframes walk-body-sway {
-        0%, 100% { transform: rotate(-2deg) translateY(2px); }
-        50% { transform: rotate(2deg) translateY(2px); }
-      }
-      .animate-body-walk {
-        animation: walk-body-sway 0.6s infinite ease-in-out;
-      }
-
-      /* Skeletal Bug Leg Animation */
-      @keyframes bug-walk-thigh {
-        0% { transform: rotate(-15deg); }
-        100% { transform: rotate(15deg); }
-      }
-      
-      @keyframes bug-walk-shin {
-        0% { transform: rotate(-10deg); }
-        50% { transform: rotate(10deg); }
-        100% { transform: rotate(-10deg); }
-      }
-    </style>
   <script type="importmap">
 {
   "imports": {

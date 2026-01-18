@@ -1,0 +1,111 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: 'Nunito', sans-serif;
+  overflow-x: hidden;
+}
+
+.perspective-container {
+  perspective: 1000px;
+}
+
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+
+/* Custom Feather Pattern */
+.feather-pattern {
+  background-image: radial-gradient(circle at 50% 120%, rgba(255, 255, 255, 0.4) 10%, transparent 50%);
+  background-size: 10px 10px;
+}
+
+/* Subtle breathing for chest only */
+@keyframes breathe {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 1;
+  }
+}
+
+.animate-breathe {
+  animation: breathe 3s ease-in-out infinite;
+}
+
+/* Walking Gait Animations */
+@keyframes walk-left-leg {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-12px) rotate(-15deg);
+  }
+  50% {
+    transform: translateY(0) rotate(0deg);
+  }
+}
+
+@keyframes walk-right-leg {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(0) rotate(0deg);
+  }
+  75% {
+    transform: translateY(-12px) rotate(15deg);
+  }
+}
+
+.animate-walk-left {
+  animation: walk-left-leg 0.6s infinite ease-in-out;
+}
+
+.animate-walk-right {
+  animation: walk-right-leg 0.6s infinite ease-in-out;
+}
+
+/* Subtle body sway during walk */
+@keyframes walk-body-sway {
+  0%,
+  100% {
+    transform: rotate(-2deg) translateY(2px);
+  }
+  50% {
+    transform: rotate(2deg) translateY(2px);
+  }
+}
+
+.animate-body-walk {
+  animation: walk-body-sway 0.6s infinite ease-in-out;
+}
+
+/* Skeletal Bug Leg Animation */
+@keyframes bug-walk-thigh {
+  0% {
+    transform: rotate(-15deg);
+  }
+  100% {
+    transform: rotate(15deg);
+  }
+}
+
+@keyframes bug-walk-shin {
+  0% {
+    transform: rotate(-10deg);
+  }
+  50% {
+    transform: rotate(10deg);
+  }
+  100% {
+    transform: rotate(-10deg);
+  }
+}
