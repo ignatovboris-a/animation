@@ -69,7 +69,9 @@ export const Bug: React.FC<BugProps> = ({ x, y, isSquashed }) => {
   const prevPos = useRef({ x, y });
   const [rotation, setRotation] = useState(0);
   const [isMoving, setIsMoving] = useState(false);
+  const [blink, setBlink] = useState(false);
 
+  // Movement Logic
   useEffect(() => {
     const dx = x - prevPos.current.x;
     const dy = y - prevPos.current.y;
@@ -85,6 +87,18 @@ export const Bug: React.FC<BugProps> = ({ x, y, isSquashed }) => {
     prevPos.current = { x, y };
   }, [x, y]);
 
+  // Blink Logic
+  useEffect(() => {
+    const blinkInterval = setInterval(() => {
+        if (!isSquashed && Math.random() > 0.6) { // Not always blinking on interval
+            setBlink(true);
+            setTimeout(() => setBlink(false), 150);
+        }
+    }, 2000 + Math.random() * 2000); // Random check every 2-4 seconds
+
+    return () => clearInterval(blinkInterval);
+  }, [isSquashed]);
+
   return (
     <div
       className="absolute w-12 h-14 pointer-events-none z-10"
@@ -99,7 +113,6 @@ export const Bug: React.FC<BugProps> = ({ x, y, isSquashed }) => {
       <div className="relative w-full h-full">
         
         {/* --- Skeletal Legs Layer --- */}
-        {/* We center them relative to the thorax (approx top third of this container) */}
         <div className="absolute top-[40%] left-1/2 w-0 h-0">
             <SkeletalLeg side="left" index={0} isMoving={isMoving && !isSquashed} />
             <SkeletalLeg side="left" index={1} isMoving={isMoving && !isSquashed} />
@@ -123,10 +136,10 @@ export const Bug: React.FC<BugProps> = ({ x, y, isSquashed }) => {
             {/* Eyes */}
              {!isSquashed && (
               <>
-                <div className="absolute top-1 left-0.5 w-3 h-3 bg-white rounded-full border border-stone-600 flex items-center justify-center">
+                <div className={`absolute top-1 left-0.5 w-3 h-3 bg-white rounded-full border border-stone-600 flex items-center justify-center transition-transform duration-100 ${blink ? 'scale-y-0' : 'scale-y-100'}`}>
                     <div className="w-1 h-1 bg-black rounded-full"></div>
                 </div>
-                <div className="absolute top-1 right-0.5 w-3 h-3 bg-white rounded-full border border-stone-600 flex items-center justify-center">
+                <div className={`absolute top-1 right-0.5 w-3 h-3 bg-white rounded-full border border-stone-600 flex items-center justify-center transition-transform duration-100 ${blink ? 'scale-y-0' : 'scale-y-100'}`}>
                     <div className="w-1 h-1 bg-black rounded-full"></div>
                 </div>
               </>

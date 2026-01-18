@@ -51,6 +51,10 @@ export const OwlWidget: React.FC<OwlWidgetProps> = ({
   const [currentJoke, setCurrentJoke] = useState<string | null>(null);
   const jokeTimeoutRef = useRef<number | null>(null);
 
+  // Reaction Delay State
+  const targetBugIdRef = useRef<string | null>(null);
+  const nextHuntTimeRef = useRef<number>(0);
+
   // Initial Position Logic: If defaultPosition changes drastically, teleport or acknowledge?
   // We generally trust the internal state, but on mount we respect default.
   // We use a ref to track if we've initialized to avoid jumping if prop updates.
@@ -62,8 +66,8 @@ export const OwlWidget: React.FC<OwlWidgetProps> = ({
     }
   }, [defaultPosition]);
 
-  // Speed constants
-  const SPEED = 4; // Pixels per frame
+  // Speed constants (Reduced by half as requested)
+  const SPEED = 2; // Pixels per frame
   const ATTACK_RANGE = 60; // Distance to trigger attack
 
   const requestRef = useRef<number>(0);
@@ -107,7 +111,29 @@ export const OwlWidget: React.FC<OwlWidgetProps> = ({
         return;
     }
 
+    // Reaction Delay Logic
+    let shouldHunt = false;
+    
     if (activeBug) {
+        // If this is a new target we haven't tracked yet
+        if (targetBugIdRef.current !== activeBug.id) {
+            targetBugIdRef.current = activeBug.id;
+            // Set random delay between 3 and 10 seconds (3000 - 10000ms)
+            const delay = 3000 + Math.random() * 7000;
+            nextHuntTimeRef.current = Date.now() + delay;
+        }
+
+        // Only hunt if delay has passed
+        if (Date.now() >= nextHuntTimeRef.current) {
+            shouldHunt = true;
+        }
+    } else {
+        // No bugs, reset tracking
+        targetBugIdRef.current = null;
+        nextHuntTimeRef.current = 0;
+    }
+
+    if (shouldHunt && activeBug) {
       // Logic for hunting
       const dx = activeBug.x - position.x;
       const dy = activeBug.y - position.y;
@@ -153,7 +179,7 @@ export const OwlWidget: React.FC<OwlWidgetProps> = ({
       }
 
     } else {
-      // --- NO ACTIVE BUGS ---
+      // --- NO ACTIVE BUGS (OR WAITING FOR REACTION DELAY) ---
 
       // Check priorities: Attacking/Celebrating/Sleeping take precedence
       if (action === OwlAction.ATTACKING || action === OwlAction.CELEBRATING || action === OwlAction.SLEEPING || action === OwlAction.TELLING_JOKE) {

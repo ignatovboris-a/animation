@@ -17,6 +17,8 @@ export interface BugEntity {
   id: string;
   x: number;
   y: number;
+  vx: number; // Velocity X
+  vy: number; // Velocity Y
   isSquashed: boolean;
 }
 

@@ -14,10 +14,11 @@ function App() {
   const [startPosPercent, setStartPosPercent] = useState({ x: 50, y: 50 }); // 50% 50% center
   const [computedStartPos, setComputedStartPos] = useState<Position>({ x: 0, y: 0 });
 
-  // Auto Spawn Configuration
+  // Auto Spawn Configuration (Time in milliseconds)
   const [autoSpawn, setAutoSpawn] = useState(false);
-  const [minSpawnTime, setMinSpawnTime] = useState(1000); // 1 sec
-  const [maxSpawnTime, setMaxSpawnTime] = useState(3000); // 3 sec
+  // Default: Min 1 min (60000ms), Max 5 min (300000ms) for initial UX
+  const [minSpawnTime, setMinSpawnTime] = useState(60 * 1000); 
+  const [maxSpawnTime, setMaxSpawnTime] = useState(5 * 60 * 1000); 
   
   const [owlPosition, setOwlPosition] = useState<Position>({ x: 0, y: 0 });
   
@@ -56,8 +57,12 @@ function App() {
 
     const scheduleSpawn = () => {
         // Calculate random delay between min and max
-        const delay = Math.random() * (Math.max(0, maxSpawnTime - minSpawnTime)) + minSpawnTime;
+        // Ensure max is at least min
+        const effectiveMax = Math.max(minSpawnTime, maxSpawnTime);
+        const delay = Math.random() * (effectiveMax - minSpawnTime) + minSpawnTime;
         
+        console.log(`Next bug spawning in ${(delay/60000).toFixed(2)} minutes`);
+
         timeoutId = window.setTimeout(() => {
             spawnBug();
             scheduleSpawn(); // Recurse
@@ -75,7 +80,18 @@ function App() {
     const x = Math.random() * (window.innerWidth * 0.8) + (window.innerWidth * 0.1);
     const y = Math.random() * (window.innerHeight * 0.8) + (window.innerHeight * 0.1);
     
-    setBugs(prev => [...prev, { id, x, y, isSquashed: false }]);
+    // Initial velocity is random but slow (Idle)
+    const angle = Math.random() * Math.PI * 2;
+    const speed = 0.5;
+
+    setBugs(prev => [...prev, { 
+      id, 
+      x, 
+      y, 
+      vx: Math.cos(angle) * speed, 
+      vy: Math.sin(angle) * speed, 
+      isSquashed: false 
+    }]);
   };
 
   // --- Bug AI Game Loop ---
@@ -87,8 +103,9 @@ function App() {
       const owlPos = owlPosRef.current;
       
       let hasChanges = false;
-      const PANIC_DISTANCE = 200;
-      const BUG_SPEED = 2.5;
+      const PANIC_DISTANCE = 220;
+      const PANIC_SPEED = 3.5;
+      const WANDER_SPEED = 0.8;
 
       const updatedBugs = currentBugs.map(bug => {
         if (bug.isSquashed) return bug;
@@ -97,25 +114,42 @@ function App() {
         const dy = bug.y - owlPos.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
 
+        let newVx = bug.vx;
+        let newVy = bug.vy;
+
         if (dist < PANIC_DISTANCE) {
-          // RUN AWAY!
+          // --- PANIC MODE: Run directly away from Owl ---
           hasChanges = true;
           
           // Normalize vector away from owl
-          const vx = (dx / dist) * BUG_SPEED;
-          const vy = (dy / dist) * BUG_SPEED;
-
-          let newX = bug.x + vx;
-          let newY = bug.y + vy;
-
-          // Screen Boundaries (Bounce slightly or just clamp)
-          if (newX < 50) newX = 50;
-          if (newX > window.innerWidth - 50) newX = window.innerWidth - 50;
-          if (newY < 50) newY = 50;
-          if (newY > window.innerHeight - 50) newY = window.innerHeight - 50;
-
-          return { ...bug, x: newX, y: newY };
+          newVx = (dx / dist) * PANIC_SPEED;
+          newVy = (dy / dist) * PANIC_SPEED;
+        
+        } else {
+          // --- WANDER MODE: Randomly change direction occasionally ---
+          // 2% chance per frame to change direction
+          if (Math.random() < 0.02) {
+             hasChanges = true;
+             const angle = Math.random() * Math.PI * 2;
+             newVx = Math.cos(angle) * WANDER_SPEED;
+             newVy = Math.sin(angle) * WANDER_SPEED;
+          }
         }
+
+        let newX = bug.x + newVx;
+        let newY = bug.y + newVy;
+
+        // --- BOUNDARIES: Bounce off walls ---
+        const padding = 50;
+        if (newX < padding) { newX = padding; newVx = Math.abs(newVx); hasChanges = true; }
+        if (newX > window.innerWidth - padding) { newX = window.innerWidth - padding; newVx = -Math.abs(newVx); hasChanges = true; }
+        if (newY < padding) { newY = padding; newVy = Math.abs(newVy); hasChanges = true; }
+        if (newY > window.innerHeight - padding) { newY = window.innerHeight - padding; newVy = -Math.abs(newVy); hasChanges = true; }
+
+        if (newVx !== bug.vx || newVy !== bug.vy || newX !== bug.x || newY !== bug.y) {
+           return { ...bug, x: newX, y: newY, vx: newVx, vy: newVy };
+        }
+
         return bug;
       });
 
@@ -142,6 +176,9 @@ function App() {
   };
 
   const clearBugs = () => setBugs([]);
+
+  // Helpers for Time format (ms -> minutes)
+  const toMin = (ms: number) => (ms / 60000).toFixed(1);
 
   return (
     <div className="relative min-h-screen bg-slate-50 overflow-hidden cursor-crosshair">
@@ -239,9 +276,12 @@ function App() {
             </div>
             
             <label className="text-xs font-bold flex flex-col gap-1 opacity-90">
-                Min Interval: {(minSpawnTime/1000).toFixed(1)}s
+                Min Interval: {toMin(minSpawnTime)} min
                 <input 
-                    type="range" min="100" max="5000" step="100" 
+                    type="range" 
+                    min={60 * 1000} // 1 min
+                    max={20 * 60 * 1000} // 20 min
+                    step={30 * 1000} // 30 sec steps
                     value={minSpawnTime} 
                     onChange={(e) => {
                         const val = parseInt(e.target.value);
@@ -254,9 +294,12 @@ function App() {
             </label>
 
             <label className="text-xs font-bold flex flex-col gap-1 opacity-90">
-                Max Interval: {(maxSpawnTime/1000).toFixed(1)}s
+                Max Interval: {toMin(maxSpawnTime)} min
                 <input 
-                    type="range" min="100" max="10000" step="100" 
+                    type="range" 
+                    min={4 * 60 * 1000} // 4 min
+                    max={40 * 60 * 1000} // 40 min
+                    step={60 * 1000} // 1 min steps
                     value={maxSpawnTime} 
                     onChange={(e) => {
                         const val = parseInt(e.target.value);
