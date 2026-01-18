@@ -22,3 +22,90 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+
+# .NET build artifacts
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Visual Studio
+.vscode/
+.vs/
+#launchSettings.json
+
+# Rider
+.idea/
+
+# User-specific files
+*.swp
+*.DS_Store
+*.log
+*.orig
+
+# ASP.NET Scaffolding
+ScaffoldingReadMe.txt
+
+# Build results
+*.dll
+*.exe
+*.db
+*.pdb
+
+# Environment configs (optional)
+#.env
+*.secrets.json
+
+# Docker
+docker-compose.override.yml
+#**/Dockerfile.*
+
+# Logs
+logs/
+*.log
+
+# Test results
+TestResults/
+*.coverage
+*.coveragexml
+*.testresults
+
+# Roslyn
+.vsconfig
+
+# JetBrains Rider
+.idea/
+*.sln.iml
+
+# NATS/Temp runtime
+*.nats-streaming*
+
+# Linux/macOS
+*~
+*.pid
+
+**/publish/wwwroot/
+
+# Исключить сторонние библиотеки, скопированные в wwwroot
+**/wwwroot/lib/
+**/wwwroot/**/*.min.js
+**/wwwroot/**/*.min.css
+**/wwwroot/**/*.map
+
+# Артефакты публикации Blazor/ASP.NET Core
+**/publish/
+**/*.staticwebassets.endpoints.json
+**/*.staticwebassets.runtime.json
+**/*.staticwebassets.props
+**/*.staticwebassets.xml
+/logging/VVPGRobots.LogReceiver/Buffer-20250714.txt
+/logging/VVPGRobots.LogReceiver/Buffer.bookmark
+
+#npm
+**/node_modules/
+**/__pycache__/
+/dump_client.txt
+/dump.txt
