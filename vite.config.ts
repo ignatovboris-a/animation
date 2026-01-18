@@ -17,6 +17,14 @@ export default defineConfig(({ mode }) => {
           formats: ['iife'],
           fileName: () => 'owl-widget-bundle.js',
         },
+        rollupOptions: {
+          output: {
+            assetFileNames: (assetInfo) =>
+              assetInfo.name?.endsWith('.css')
+                ? 'owl-widget-bundle.css'
+                : 'assets/[name]-[hash][extname]',
+          },
+        },
       },
       define: {
         'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY),
