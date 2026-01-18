@@ -325,6 +325,7 @@ function App() {
       <OwlWidget 
         bugs={bugs} 
         onSquashBug={handleSquash} 
+        onSpawnBug={spawnBug}
         onMove={handleOwlMove}
         scale={owlScale}
         defaultPosition={computedStartPos}
