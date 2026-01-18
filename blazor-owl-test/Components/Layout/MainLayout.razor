@@ -1,0 +1,19 @@
+@inherits LayoutComponentBase
+
+<div class="page">
+    <header class="page-header">
+        <h1>Blazor Owl Test</h1>
+        <p>Тестовый проект для проверки интеграции DevOwl Widget.</p>
+    </header>
+
+    <main>
+        @Body
+    </main>
+</div>
+
+<OwlWidgetWrapper Scale="0.8"
+                  StartXPercent="20"
+                  StartYPercent="20"
+                  AutoSpawn="true"
+                  MinSpawnSeconds="120"
+                  MaxSpawnSeconds="300" />
