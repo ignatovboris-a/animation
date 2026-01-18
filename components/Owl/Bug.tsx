@@ -101,7 +101,7 @@ export const Bug: React.FC<BugProps> = ({ x, y, isSquashed }) => {
 
   return (
     <div
-      className="absolute w-12 h-14 pointer-events-none z-10"
+      className="absolute w-12 h-14 pointer-events-auto z-10 cursor-crosshair"
       style={{
         left: x,
         top: y,
