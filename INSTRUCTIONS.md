@@ -79,7 +79,7 @@ Blazor Server выполняет рендеринг на сервере, но н
 @implements IAsyncDisposable
 
 <!-- Контейнер для React -->
-<div id="owl-widget-root" style="position: fixed; inset: 0; z-index: 9999;"></div>
+<div id="owl-widget-root"></div>
 
 @code {
     private bool _initialized;
@@ -155,7 +155,8 @@ Blazor Server выполняет рендеринг на сервере, но н
 </div>
 
 <!-- Добавляем виджет -->
-    <OwlWidgetWrapper Scale="0.8"
+    <OwlWidgetWrapper @rendermode="new InteractiveServerRenderMode()"
+                      Scale="0.8"
                       StartXPercent="20"
                       StartYPercent="20"
                       AutoSpawn="true"
