@@ -1,0 +1,55 @@
+@inject IJSRuntime JSRuntime
+@implements IAsyncDisposable
+
+<div id="owl-widget-root" style="position: fixed; inset: 0; z-index: 9999;"></div>
+
+@code {
+    private bool _initialized;
+
+    [Parameter]
+    public double Scale { get; set; } = 0.8;
+
+    [Parameter]
+    public int StartXPercent { get; set; } = 90;
+
+    [Parameter]
+    public int StartYPercent { get; set; } = 90;
+
+    [Parameter]
+    public bool AutoSpawn { get; set; } = false;
+
+    [Parameter]
+    public double MinSpawnSeconds { get; set; } = 60;
+
+    [Parameter]
+    public double MaxSpawnSeconds { get; set; } = 300;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !_initialized)
+        {
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("mcp.mountOwlWidget", "owl-widget-root", new
+                {
+                    scale = Scale,
+                    startXPercent = StartXPercent,
+                    startYPercent = StartYPercent,
+                    autoSpawn = AutoSpawn,
+                    minSpawnSeconds = MinSpawnSeconds,
+                    maxSpawnSeconds = MaxSpawnSeconds
+                });
+                _initialized = true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Ошибка запуска OwlWidget: {ex.Message}");
+            }
+        }
+    }
+
+    public ValueTask DisposeAsync()
+    {
+        return ValueTask.CompletedTask;
+    }
+}
