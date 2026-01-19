@@ -3,21 +3,42 @@ import { OwlWidget } from './OwlWidget';
 import { Bug } from './Bug';
 import { BugEntity, Position } from '../../types';
 
-export const OwlOverlay: React.FC = () => {
+interface OwlOverlayProps {
+  initialScale?: number;
+  initialStartXPercent?: number;
+  initialStartYPercent?: number;
+  initialAutoSpawn?: boolean;
+  initialMinSpawnSeconds?: number;
+  initialMaxSpawnSeconds?: number;
+  controlsEnabled?: boolean;
+}
+
+export const OwlOverlay: React.FC<OwlOverlayProps> = ({
+  initialScale = 0.8,
+  initialStartXPercent = 90,
+  initialStartYPercent = 90,
+  initialAutoSpawn = false,
+  initialMinSpawnSeconds = 60,
+  initialMaxSpawnSeconds = 300,
+  controlsEnabled = true
+}) => {
   const [bugs, setBugs] = useState<BugEntity[]>([]);
   
   // -- Portal Configuration Mock State --
-  const [owlScale, setOwlScale] = useState(0.8);
+  const [owlScale, setOwlScale] = useState(initialScale);
   const [returnToStart, setReturnToStart] = useState(true);
   
   // Initial Position State
-  const [startPosPercent, setStartPosPercent] = useState({ x: 90, y: 90 }); // Default bottom-right corner
+  const [startPosPercent, setStartPosPercent] = useState({
+    x: initialStartXPercent,
+    y: initialStartYPercent
+  }); // Default bottom-right corner
   const [computedStartPos, setComputedStartPos] = useState<Position>({ x: 0, y: 0 });
 
   // Auto Spawn Configuration
-  const [autoSpawn, setAutoSpawn] = useState(false);
-  const [minSpawnTime, setMinSpawnTime] = useState(60 * 1000); 
-  const [maxSpawnTime, setMaxSpawnTime] = useState(5 * 60 * 1000); 
+  const [autoSpawn, setAutoSpawn] = useState(initialAutoSpawn);
+  const [minSpawnTime, setMinSpawnTime] = useState(initialMinSpawnSeconds * 1000); 
+  const [maxSpawnTime, setMaxSpawnTime] = useState(initialMaxSpawnSeconds * 1000); 
   
   // Refs
   const owlPosRef = useRef<Position>({ x: 0, y: 0 });
@@ -144,7 +165,7 @@ export const OwlOverlay: React.FC = () => {
   const clearBugs = () => setBugs([]);
 
   // Control Panel Toggle Logic
-  const [showControls, setShowControls] = useState(true);
+  const [showControls, setShowControls] = useState(controlsEnabled);
 
   return (
     <>
@@ -164,7 +185,7 @@ export const OwlOverlay: React.FC = () => {
         />
         
         {/* Toggle Button for controls when hidden */}
-        {!showControls && (
+        {controlsEnabled && !showControls && (
             <button 
                 className="absolute bottom-4 right-4 w-10 h-10 bg-white/80 backdrop-blur border border-slate-300 rounded-full shadow-lg flex items-center justify-center text-xl pointer-events-auto hover:bg-white hover:scale-110 transition-all z-[10001]"
                 onClick={() => setShowControls(true)}
@@ -176,7 +197,7 @@ export const OwlOverlay: React.FC = () => {
       </div>
 
       {/* Configuration Panel (Only shows if requested) */}
-      {showControls && (
+      {controlsEnabled && showControls && (
         <div className="fixed bottom-4 left-4 right-4 z-[10000] bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-slate-200 p-4 max-w-6xl mx-auto flex flex-wrap gap-6 justify-between items-start text-slate-800 animate-in slide-in-from-bottom-5">
              
              {/* Actions */}

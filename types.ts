@@ -27,3 +27,13 @@ export interface OwlProps {
   targetPosition?: Position | null; // Where the owl is looking/walking towards
   lookAt?: Position | null; // Specific focus point for eyes
 }
+
+export interface OwlWidgetConfig {
+  scale?: number;
+  startXPercent?: number;
+  startYPercent?: number;
+  autoSpawn?: boolean;
+  minSpawnSeconds?: number;
+  maxSpawnSeconds?: number;
+  controlsEnabled?: boolean;
+}

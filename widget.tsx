@@ -2,10 +2,11 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import { OwlOverlay } from './components/Owl/OwlOverlay';
+import { OwlWidgetConfig } from './types';
 
 declare global {
   interface Window {
-    mountOwlWidget?: (containerId: string) => void;
+    mountOwlWidget?: (containerId: string, options?: OwlWidgetConfig) => void;
   }
 }
 
@@ -21,7 +22,7 @@ const ensureStyleDependencies = () => {
   }
 };
 
-export const mountOwlWidget = (containerId: string) => {
+export const mountOwlWidget = (containerId: string, options?: OwlWidgetConfig) => {
   const container = document.getElementById(containerId);
   if (!container) {
     console.error(`OwlWidget: Container with id '${containerId}' not found.`);
@@ -33,7 +34,15 @@ export const mountOwlWidget = (containerId: string) => {
   const root = ReactDOM.createRoot(container);
   root.render(
     <React.StrictMode>
-      <OwlOverlay />
+      <OwlOverlay
+        initialScale={options?.scale}
+        initialStartXPercent={options?.startXPercent}
+        initialStartYPercent={options?.startYPercent}
+        initialAutoSpawn={options?.autoSpawn}
+        initialMinSpawnSeconds={options?.minSpawnSeconds}
+        initialMaxSpawnSeconds={options?.maxSpawnSeconds}
+        controlsEnabled={options?.controlsEnabled}
+      />
     </React.StrictMode>
   );
 };
