@@ -24,6 +24,9 @@
     [Parameter]
     public double MaxSpawnSeconds { get; set; } = 300;
 
+    [Parameter]
+    public bool EnableControls { get; set; } = true;
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender && !_initialized)
@@ -37,7 +40,8 @@
                     startYPercent = StartYPercent,
                     autoSpawn = AutoSpawn,
                     minSpawnSeconds = MinSpawnSeconds,
-                    maxSpawnSeconds = MaxSpawnSeconds
+                    maxSpawnSeconds = MaxSpawnSeconds,
+                    controlsEnabled = EnableControls
                 });
                 _initialized = true;
             }
