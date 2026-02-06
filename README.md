@@ -1,3 +1,13 @@
+<div align="center">
+<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+</div>
+
+# Run and deploy your AI Studio app
+
+This contains everything you need to run your app locally.
+
+View your app in AI Studio: https://ai.studio/apps/drive/1_ODkErTGvaHXiztNmYPm19pzFooObl6o
+
 ## Run Locally
 
 **Prerequisites:**  Node.js
@@ -5,27 +15,6 @@
 
 1. Install dependencies:
    `npm install`
-2. Run the app:
+2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
+3. Run the app:
    `npm run dev`
-
-## Build the embeddable widget bundle
-
-1. Install dependencies:
-   `npm install`
-2. Build the widget bundle:
-   `npm run build`
-3. Use the generated bundle at:
-   `dist/owl-widget-bundle.js`
-4. Include the generated styles:
-   `dist/owl-widget-bundle.css`
-
-### Usage (Blazor / external embed)
-
-1. Add a container element on your page:
-   `<div id="owl-widget-root"></div>`
-2. Include the bundle styles:
-   `<link href="/path/to/owl-widget-bundle.css" rel="stylesheet">`
-3. Include the bundle script:
-   `<script src="/path/to/owl-widget-bundle.js"></script>`
-4. Mount the widget:
-   `<script>window.mountOwlWidget('owl-widget-root');</script>`

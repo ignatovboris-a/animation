@@ -1,8 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
-import { mountOwlWidget } from './widget';
-import './index.css';
+import { OwlOverlay } from './components/Owl/OwlOverlay';
 
 // Standalone mount (for development)
 const rootElement = document.getElementById('root');
@@ -17,4 +16,17 @@ if (rootElement) {
 
 // Expose mount function for Blazor / External Embedding
 // This mounts ONLY the Owl Overlay, not the App content background
-window.mountOwlWidget = mountOwlWidget;
+// @ts-ignore
+window.mountOwlWidget = (containerId: string) => {
+    const container = document.getElementById(containerId);
+    if (container) {
+        const root = ReactDOM.createRoot(container);
+        root.render(
+            <React.StrictMode>
+                <OwlOverlay />
+            </React.StrictMode>
+        );
+    } else {
+        console.error(`OwlWidget: Container with id '${containerId}' not found.`);
+    }
+};

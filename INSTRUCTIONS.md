@@ -8,7 +8,7 @@
 1. Убедитесь, что установлены зависимости: `npm install`
 2. Соберите проект: `npm run build`
 
-В результате вы получите JS-файл (бандл) и CSS-файл в папке `dist`. Для интеграции нам понадобятся эти файлы.
+В результате вы получите JS-файл (бандл) и CSS-файл (если стили не инлайнятся) в папке `dist` или `build`. Для интеграции нам понадобятся эти файлы.
 
 ---
 
@@ -20,8 +20,8 @@
 
 ```html
 <head>
-    <!-- Подключаем стили виджета (включая Tailwind) -->
-    <link href="/path/to/owl-widget-bundle.css" rel="stylesheet">
+    <!-- Подключаем стили (Tailwind или собранный CSS) -->
+    <link href="/path/to/style.css" rel="stylesheet">
 </head>
 <body>
     <!-- Ваш контент сайта -->
@@ -69,7 +69,7 @@ Blazor Server выполняет рендеринг на сервере, но н
 <script src="/js/owl-widget-bundle.js"></script> <!-- Укажите правильный путь -->
 ```
 
-*Примечание: Tailwind уже собран в `owl-widget-bundle.css`, подключать CDN не нужно.*
+*Примечание: Если вы используете Tailwind CSS, убедитесь, что он также подключен в `head`.*
 
 ### 2. Создание Razor-компонента-обертки
 Создайте новый файл компонента, например `Components/OwlWidgetWrapper.razor`. Этот компонент будет отвечать за создание контейнера и вызов JS-функции.
@@ -84,44 +84,14 @@ Blazor Server выполняет рендеринг на сервере, но н
 @code {
     private bool _initialized;
 
-    [Parameter]
-    public double Scale { get; set; } = 0.8;
-
-    [Parameter]
-    public int StartXPercent { get; set; } = 90;
-
-    [Parameter]
-    public int StartYPercent { get; set; } = 90;
-
-    [Parameter]
-    public bool AutoSpawn { get; set; } = false;
-
-    [Parameter]
-    public double MinSpawnSeconds { get; set; } = 60;
-
-    [Parameter]
-    public double MaxSpawnSeconds { get; set; } = 300;
-
-    [Parameter]
-    public bool EnableControls { get; set; } = true;
-
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender && !_initialized)
         {
-            try
+            try 
             {
                 // Вызываем глобальную функцию, объявленную в index.tsx
-                await JSRuntime.InvokeVoidAsync("mcp.mountOwlWidget", "owl-widget-root", new
-                {
-                    scale = Scale,
-                    startXPercent = StartXPercent,
-                    startYPercent = StartYPercent,
-                    autoSpawn = AutoSpawn,
-                    minSpawnSeconds = MinSpawnSeconds,
-                    maxSpawnSeconds = MaxSpawnSeconds,
-                    controlsEnabled = EnableControls
-                });
+                await JSRuntime.InvokeVoidAsync("mountOwlWidget", "owl-widget-root");
                 _initialized = true;
             }
             catch (Exception ex)
@@ -137,8 +107,6 @@ Blazor Server выполняет рендеринг на сервере, но н
         // React 18 createRoot требует явного unmount для очистки памяти при удалении компонента.
         // Для глобального виджета это обычно не критично, если он живет все время работы приложения.
     }
-}
-
 }
 ```
 
@@ -159,57 +127,25 @@ Blazor Server выполняет рендеринг на сервере, но н
 </div>
 
 <!-- Добавляем виджет -->
-    <OwlWidgetWrapper @rendermode="new InteractiveServerRenderMode()"
-                      Scale="0.8"
-                      StartXPercent="20"
-                      StartYPercent="20"
-                      AutoSpawn="true"
-                      MinSpawnSeconds="120"
-                      MaxSpawnSeconds="300"
-                      EnableControls="false" />
+<OwlWidgetWrapper />
 ```
 
+## Технические детали (index.tsx)
 
-
-## Технические детали (site.js)
-
-Интеграция работает благодаря этому коду
+Интеграция работает благодаря этому коду в `index.tsx` вашего React проекта:
 
 ```typescript
-
-window.mcp.mountOwlWidget = (containerId, options) => {
-    const config = {
-        scale: typeof options?.scale === "number" ? options.scale : 0.8,
-        startXPercent: typeof options?.startXPercent === "number" ? options.startXPercent : 90,
-        startYPercent: typeof options?.startYPercent === "number" ? options.startYPercent : 90,
-        autoSpawn: typeof options?.autoSpawn === "boolean" ? options.autoSpawn : false,
-        minSpawnSeconds: typeof options?.minSpawnSeconds === "number" ? options.minSpawnSeconds : 60,
-        maxSpawnSeconds: typeof options?.maxSpawnSeconds === "number" ? options.maxSpawnSeconds : 300,
-        controlsEnabled: typeof options?.controlsEnabled === "boolean" ? options.controlsEnabled : true
-    };
-
-    console.info("OwlWidget: requested mount", { containerId, config });
-
-    const startTime = performance.now();
-    const timeoutMs = 10000;
-
-    const waitForMount = () => {
-        if (typeof window.mountOwlWidget === "function") {
-            const container = document.getElementById(containerId);
-            console.info("OwlWidget: mount function available", { containerFound: Boolean(container) });
-            window.mountOwlWidget(containerId, config);
-            return;
-        }
-
-        if (performance.now() - startTime < timeoutMs) {
-            setTimeout(waitForMount, 100);
-            return;
-        }
-
-        console.warn("OwlWidget: mountOwlWidget is not available after waiting.", { containerId });
-    };
-
-    waitForMount();
+// @ts-ignore
+window.mountOwlWidget = (containerId: string) => {
+    const container = document.getElementById(containerId);
+    if (container) {
+        const root = ReactDOM.createRoot(container);
+        root.render(
+            <React.StrictMode>
+                <OwlOverlay />
+            </React.StrictMode>
+        );
+    }
 };
 ```
 

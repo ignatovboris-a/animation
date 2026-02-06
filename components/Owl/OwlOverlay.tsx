@@ -3,42 +3,24 @@ import { OwlWidget } from './OwlWidget';
 import { Bug } from './Bug';
 import { BugEntity, Position } from '../../types';
 
-interface OwlOverlayProps {
-  initialScale?: number;
-  initialStartXPercent?: number;
-  initialStartYPercent?: number;
-  initialAutoSpawn?: boolean;
-  initialMinSpawnSeconds?: number;
-  initialMaxSpawnSeconds?: number;
-  controlsEnabled?: boolean;
-}
-
-export const OwlOverlay: React.FC<OwlOverlayProps> = ({
-  initialScale = 0.8,
-  initialStartXPercent = 90,
-  initialStartYPercent = 90,
-  initialAutoSpawn = false,
-  initialMinSpawnSeconds = 60,
-  initialMaxSpawnSeconds = 300,
-  controlsEnabled = true
-}) => {
+export const OwlOverlay: React.FC = () => {
   const [bugs, setBugs] = useState<BugEntity[]>([]);
   
   // -- Portal Configuration Mock State --
-  const [owlScale, setOwlScale] = useState(initialScale);
+  const [owlScale, setOwlScale] = useState(0.8);
   const [returnToStart, setReturnToStart] = useState(true);
   
   // Initial Position State
-  const [startPosPercent, setStartPosPercent] = useState({
-    x: initialStartXPercent,
-    y: initialStartYPercent
-  }); // Default bottom-right corner
+  const [startPosPercent, setStartPosPercent] = useState({ x: 90, y: 90 }); // Default bottom-right corner
   const [computedStartPos, setComputedStartPos] = useState<Position>({ x: 0, y: 0 });
 
   // Auto Spawn Configuration
-  const [autoSpawn, setAutoSpawn] = useState(initialAutoSpawn);
-  const [minSpawnTime, setMinSpawnTime] = useState(initialMinSpawnSeconds * 1000); 
-  const [maxSpawnTime, setMaxSpawnTime] = useState(initialMaxSpawnSeconds * 1000); 
+  const [autoSpawn, setAutoSpawn] = useState(false);
+  const [minSpawnTime, setMinSpawnTime] = useState(60 * 1000); 
+  const [maxSpawnTime, setMaxSpawnTime] = useState(5 * 60 * 1000); 
+
+  // Page Visibility State
+  const [isPageVisible, setIsPageVisible] = useState(true);
   
   // Refs
   const owlPosRef = useRef<Position>({ x: 0, y: 0 });
@@ -47,6 +29,19 @@ export const OwlOverlay: React.FC<OwlOverlayProps> = ({
   useEffect(() => {
     bugsRef.current = bugs;
   }, [bugs]);
+
+  // Handle Page Visibility Change
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      setIsPageVisible(!document.hidden);
+    };
+
+    // Set initial state
+    setIsPageVisible(!document.hidden);
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, []);
 
   // Re-calculate absolute start position
   useEffect(() => {
@@ -67,7 +62,9 @@ export const OwlOverlay: React.FC<OwlOverlayProps> = ({
 
   // --- Auto Spawn Logic ---
   useEffect(() => {
-    if (!autoSpawn) return;
+    // If autoSpawn is off OR the page is not visible, stop the timer.
+    if (!autoSpawn || !isPageVisible) return;
+
     let timeoutId: number;
     const scheduleSpawn = () => {
         const effectiveMax = Math.max(minSpawnTime, maxSpawnTime);
@@ -79,9 +76,12 @@ export const OwlOverlay: React.FC<OwlOverlayProps> = ({
     };
     scheduleSpawn();
     return () => clearTimeout(timeoutId);
-  }, [autoSpawn, minSpawnTime, maxSpawnTime]);
+  }, [autoSpawn, minSpawnTime, maxSpawnTime, isPageVisible]); // Added isPageVisible dependency
 
   const spawnBug = () => {
+    // Double check visibility just in case
+    if (document.hidden) return;
+
     const id = Math.random().toString(36).substr(2, 9);
     const x = Math.random() * (window.innerWidth * 0.8) + (window.innerWidth * 0.1);
     const y = Math.random() * (window.innerHeight * 0.8) + (window.innerHeight * 0.1);
@@ -101,6 +101,7 @@ export const OwlOverlay: React.FC<OwlOverlayProps> = ({
     let animationFrameId: number;
 
     const gameLoop = () => {
+      // Allow animation to continue for a moment even if hidden, but generally browsers throttle rAF anyway
       const currentBugs = bugsRef.current;
       const owlPos = owlPosRef.current;
       let hasChanges = false;
@@ -165,7 +166,7 @@ export const OwlOverlay: React.FC<OwlOverlayProps> = ({
   const clearBugs = () => setBugs([]);
 
   // Control Panel Toggle Logic
-  const [showControls, setShowControls] = useState(controlsEnabled);
+  const [showControls, setShowControls] = useState(true);
 
   return (
     <>
@@ -185,7 +186,7 @@ export const OwlOverlay: React.FC<OwlOverlayProps> = ({
         />
         
         {/* Toggle Button for controls when hidden */}
-        {controlsEnabled && !showControls && (
+        {!showControls && (
             <button 
                 className="absolute bottom-4 right-4 w-10 h-10 bg-white/80 backdrop-blur border border-slate-300 rounded-full shadow-lg flex items-center justify-center text-xl pointer-events-auto hover:bg-white hover:scale-110 transition-all z-[10001]"
                 onClick={() => setShowControls(true)}
@@ -197,7 +198,7 @@ export const OwlOverlay: React.FC<OwlOverlayProps> = ({
       </div>
 
       {/* Configuration Panel (Only shows if requested) */}
-      {controlsEnabled && showControls && (
+      {showControls && (
         <div className="fixed bottom-4 left-4 right-4 z-[10000] bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-slate-200 p-4 max-w-6xl mx-auto flex flex-wrap gap-6 justify-between items-start text-slate-800 animate-in slide-in-from-bottom-5">
              
              {/* Actions */}
@@ -255,7 +256,9 @@ export const OwlOverlay: React.FC<OwlOverlayProps> = ({
                 <span className="text-xs font-bold text-slate-400">AUTO SPAWN</span>
                 <div className="flex items-center gap-2 bg-slate-100 p-1 rounded-lg">
                     <input type="checkbox" checked={autoSpawn} onChange={e => setAutoSpawn(e.target.checked)} className="w-5 h-5 accent-amber-500 cursor-pointer" />
-                    <span className={`text-sm font-bold ${autoSpawn ? 'text-green-600' : 'text-slate-400'}`}>{autoSpawn ? 'ACTIVE' : 'OFF'}</span>
+                    <span className={`text-sm font-bold ${autoSpawn ? 'text-green-600' : 'text-slate-400'}`}>
+                        {autoSpawn ? (isPageVisible ? 'ACTIVE' : 'PAUSED') : 'OFF'}
+                    </span>
                 </div>
              </div>
 

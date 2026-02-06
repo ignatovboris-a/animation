@@ -10,22 +10,6 @@ export default defineConfig(({ mode }) => {
         host: '0.0.0.0',
       },
       plugins: [react()],
-      build: {
-        lib: {
-          entry: path.resolve(__dirname, 'widget.tsx'),
-          name: 'OwlWidget',
-          formats: ['iife'],
-          fileName: () => 'owl-widget-bundle.js',
-        },
-        rollupOptions: {
-          output: {
-            assetFileNames: (assetInfo) =>
-              assetInfo.name?.endsWith('.css')
-                ? 'owl-widget-bundle.css'
-                : 'assets/[name]-[hash][extname]',
-          },
-        },
-      },
       define: {
         'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY),
         'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY)

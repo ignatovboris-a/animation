@@ -30,21 +30,6 @@ const SkeletalLeg = ({
   // We use animation delays to sync them.
   const isGroupA = (isLeft && (index === 0 || index === 2)) || (!isLeft && index === 1);
   const animDelay = isGroupA ? '0s' : '-0.1s'; // Offset half the cycle (cycle is ~0.2s)
-  const animationBase = {
-    animationDuration: '0.2s',
-    animationIterationCount: 'infinite',
-    animationTimingFunction: 'ease-in-out',
-    animationDelay: animDelay,
-  } as const;
-
-  const inactiveAnimation = {
-    animationName: 'none',
-    animationDuration: '0s',
-    animationIterationCount: '1',
-    animationTimingFunction: 'ease',
-    animationDelay: '0s',
-    animationDirection: 'normal',
-  } as const;
 
   return (
     <div 
@@ -56,13 +41,8 @@ const SkeletalLeg = ({
         className="absolute bottom-[-3px] left-[-2px] w-1.5 h-6 bg-stone-900 rounded-full origin-bottom"
         style={{
            transformOrigin: '50% 100%',
-           ...(isMoving
-             ? {
-                 ...animationBase,
-                 animationName: 'bug-walk-thigh',
-                 animationDirection: 'alternate',
-               }
-             : inactiveAnimation),
+           animation: isMoving ? `bug-walk-thigh 0.2s infinite alternate ease-in-out` : 'none',
+           animationDelay: animDelay,
         }}
       >
           {/* Shin (Tibia) */}
@@ -73,13 +53,8 @@ const SkeletalLeg = ({
                 transformOrigin: '50% 100%', // Joint at the "knee" (top of thigh, bottom of shin in this inverted render? No, let's fix coordinates)
                 // Let's say Thigh grows UP from body. Shin grows UP from Thigh.
                 transform: 'translateY(-80%) rotate(30deg)', // Initial bend
-                ...(isMoving
-                  ? {
-                      ...animationBase,
-                      animationName: 'bug-walk-shin',
-                      animationDirection: 'normal',
-                    }
-                  : inactiveAnimation),
+                animation: isMoving ? `bug-walk-shin 0.2s infinite ease-in-out` : 'none',
+                animationDelay: animDelay,
             }}
           >
              {/* Tiny Foot/Claw */}
