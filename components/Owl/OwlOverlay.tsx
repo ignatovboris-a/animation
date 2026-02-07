@@ -39,14 +39,26 @@ export const OwlOverlay: React.FC<OwlOverlayProps> = ({
   const [autoSpawn, setAutoSpawn] = useState(initialAutoSpawn);
   const [minSpawnTime, setMinSpawnTime] = useState(initialMinSpawnSeconds * 1000); 
   const [maxSpawnTime, setMaxSpawnTime] = useState(initialMaxSpawnSeconds * 1000); 
+  const [isPageVisible, setIsPageVisible] = useState(!document.hidden);
   
   // Refs
   const owlPosRef = useRef<Position>({ x: 0, y: 0 });
   const bugsRef = useRef<BugEntity[]>([]);
+  const isPageVisibleRef = useRef(!document.hidden);
 
   useEffect(() => {
     bugsRef.current = bugs;
   }, [bugs]);
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      const visible = !document.hidden;
+      setIsPageVisible(visible);
+      isPageVisibleRef.current = visible;
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, []);
 
   // Re-calculate absolute start position
   useEffect(() => {
@@ -67,7 +79,7 @@ export const OwlOverlay: React.FC<OwlOverlayProps> = ({
 
   // --- Auto Spawn Logic ---
   useEffect(() => {
-    if (!autoSpawn) return;
+    if (!autoSpawn || !isPageVisible) return;
     let timeoutId: number;
     const scheduleSpawn = () => {
         const effectiveMax = Math.max(minSpawnTime, maxSpawnTime);
@@ -79,7 +91,7 @@ export const OwlOverlay: React.FC<OwlOverlayProps> = ({
     };
     scheduleSpawn();
     return () => clearTimeout(timeoutId);
-  }, [autoSpawn, minSpawnTime, maxSpawnTime]);
+  }, [autoSpawn, minSpawnTime, maxSpawnTime, isPageVisible]);
 
   const spawnBug = () => {
     const id = Math.random().toString(36).substr(2, 9);
@@ -101,6 +113,10 @@ export const OwlOverlay: React.FC<OwlOverlayProps> = ({
     let animationFrameId: number;
 
     const gameLoop = () => {
+      if (!isPageVisibleRef.current) {
+        animationFrameId = requestAnimationFrame(gameLoop);
+        return;
+      }
       const currentBugs = bugsRef.current;
       const owlPos = owlPosRef.current;
       let hasChanges = false;
